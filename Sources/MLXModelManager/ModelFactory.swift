@@ -70,6 +70,7 @@ public class ModelTypeRegistry: @unchecked Sendable {
         // VLM models
         "paligemma": create(PaliGemmaConfiguration.self, PaliGemma.init),
         "qwen2_vl": create(Qwen2VLConfiguration.self, Qwen2VL.init),
+        "qwen2_5_vl": create(Qwen2_5VLConfiguration.self, Qwen2_5VL.init),
         //"llava": create(LlavaConfiguration.self, Llava.init),
     ]
 
@@ -116,6 +117,8 @@ public class ProcessorRegistry: @unchecked Sendable {
         // Register VLM processors as before
         registerProcessorType("PaliGemmaProcessor", creator: create(PaliGemmaProcessorConfiguration.self, PaligGemmaProcessor.init))
         registerProcessorType("Qwen2VLProcessor", creator: create(Qwen2VLProcessorConfiguration.self, Qwen2VLProcessor.init))
+        registerProcessorType("Qwen2_5VLProcessor", creator: create(Qwen2_5VLProcessorConfiguration.self, Qwen2_5VLProcessor.init))
+
 
         // If you have LLM processors that need special configs, register them here.
         // Otherwise, the default LLMUserInputProcessor doesn't need a separate configuration.
