@@ -393,7 +393,7 @@ public class ModelFactory {
     private func loadPatchedTokenizer(configuration: ModelConfiguration, hub: HubApi) async throws -> Tokenizer {
     var (tokenizerConfig, tokenizerData) = try await loadTokenizerConfig(configuration: configuration, hub: hub)
 
-    var dict = tokenizerData.dictionary
+    guard var dict = tokenizerData.dictionary() else { throw ModelFactoryError.unsupportedProcessorType("No tokenizer data") }
     if var preTok = dict["pre_tokenizer"] as? [String: Any] {
         if let type = preTok["type"] as? String, type == "Sequence",
            var subTokArr = preTok["pretokenizers"] as? [[String: Any]] {
