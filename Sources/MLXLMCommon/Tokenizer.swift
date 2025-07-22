@@ -63,8 +63,8 @@ private func updateTokenizerConfig(_ tokenizerConfig: Config) -> Config {
     if let tokenizerClass = tokenizerConfig.tokenizerClass?.stringValue,
         let replacement = replacementTokenizers[tokenizerClass]
     {
-        var dictionary = tokenizerConfig.dictionary
-        dictionary["tokenizer_class"] = replacement
+        guard var dictionary = tokenizerConfig.dictionary() else { return tokenizerConfig }
+        dictionary[BinaryDistinctString("tokenizer_class")] = Config(replacement)
         return Config(dictionary)
     }
     return tokenizerConfig
@@ -145,3 +145,5 @@ public struct NaiveStreamingDetokenizer: StreamingDetokenizer {
 
         return String(new)
     }
+
+}
