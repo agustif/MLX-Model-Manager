@@ -63,11 +63,10 @@ private func updateTokenizerConfig(_ tokenizerConfig: Config) -> Config {
     if let tokenizerClass = tokenizerConfig.tokenizerClass?.stringValue,
         let replacement = replacementTokenizers[tokenizerClass]
     {
-        var dictionary = tokenizerConfig.dictionary
-        dictionary["tokenizer_class"] = replacement
+        guard var dictionary = tokenizerConfig.dictionary() else { return tokenizerConfig }
+        dictionary[BinaryDistinctString("tokenizer_class")] = Config(replacement)
         return Config(dictionary)
     }
-
     return tokenizerConfig
 }
 
@@ -100,6 +99,15 @@ public class TokenizerReplacementRegistry: @unchecked Sendable {
 }
 
 public let replacementTokenizers = TokenizerReplacementRegistry()
+
+extension Config {
+    func dictionary() -> [BinaryDistinctString: Config]? {
+        if case let .dictionary(val) = self.value {
+            return val
+        }
+        return nil
+    }
+}
 
 public protocol StreamingDetokenizer: IteratorProtocol<String> {
 
@@ -144,5 +152,3 @@ public struct NaiveStreamingDetokenizer: StreamingDetokenizer {
 
         return String(new)
     }
-
-}

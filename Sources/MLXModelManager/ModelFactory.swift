@@ -393,18 +393,18 @@ public class ModelFactory {
     private func loadPatchedTokenizer(configuration: ModelConfiguration, hub: HubApi) async throws -> Tokenizer {
     var (tokenizerConfig, tokenizerData) = try await loadTokenizerConfig(configuration: configuration, hub: hub)
 
-    var dict = tokenizerData.dictionary
-    if var preTok = dict["pre_tokenizer"] as? [String: Any] {
-        if let type = preTok["type"] as? String, type == "Sequence",
-           var subTokArr = preTok["pretokenizers"] as? [[String: Any]] {
+    guard var dict = tokenizerData.dictionary() else { throw ModelFactoryError.unsupportedProcessorType("No tokenizer data") }
+    if var preTok = dict[BinaryDistinctString("pre_tokenizer")]?.asDictionary() {
+        if let type = preTok[BinaryDistinctString("type")]?.stringValue, type == "Sequence",
+           var subTokArr = preTok[BinaryDistinctString("pretokenizers")]?.arrayValue {
 
             // We'll scan each sub-pretokenizer. If we find 'Split' with "invert"=true, "behavior"="Removed"
             var didPatch = false
             for i in 0..<subTokArr.count {
                 let item = subTokArr[i]
-                if let subType = item["type"] as? String, subType == "Split",
-                   let behavior = item["behavior"] as? String, behavior == "Removed",
-                   let invert = item["invert"] as? Bool, invert == true {
+                if let subType = item.stringValue, subType == "Split",
+                   let behavior = item.stringValue, behavior == "Removed",
+                   let invert = item.boolValue, invert == true {
 
                     // We found the destructive "Split" => remove or fix it
                     print("DEBUG: Found destructive Split pretokenizer. Removing it.")
@@ -415,8 +415,8 @@ public class ModelFactory {
             }
             // If we removed something, reassign the array
             if didPatch {
-                preTok["pretokenizers"] = subTokArr
-                dict["pre_tokenizer"] = preTok
+                preTok[BinaryDistinctString("pretokenizers")] = Config(subTokArr)
+                dict[BinaryDistinctString("pre_tokenizer")] = Config(preTok)
                 tokenizerData = Config(dict)
             }
         }
@@ -434,6 +434,15 @@ extension ModelConfiguration.Identifier {
         case .directory(let url):
             return url.absoluteString
         }
+    }
+}
+
+extension Config {
+    func asDictionary() -> [BinaryDistinctString: Config]? {
+        if case let .dictionary(val) = self.value {
+            return val
+        }
+        return nil
     }
 }
 
