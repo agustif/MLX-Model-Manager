@@ -416,7 +416,7 @@ public class ModelFactory {
             // If we removed something, reassign the array
             if didPatch {
                 preTok["pretokenizers"] = subTokArr
-                dict[BinaryDistinctString("pre_tokenizer")] = Config(preTok as [String: Any])
+                dict[BinaryDistinctString("pre_tokenizer")] = Config(preTok as [NSString: Any])
                 tokenizerData = Config(dict)
             }
         }
